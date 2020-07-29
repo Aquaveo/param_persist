@@ -38,6 +38,7 @@ jobs:
   test:
     name: Test ${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
+    needs: lint
 
     strategy:
       fail-fast: false
@@ -64,6 +65,7 @@ jobs:
   deploy:
     name: Deploy ${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
+    needs: test
 
     strategy:
       fail-fast: false
