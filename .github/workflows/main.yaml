@@ -38,7 +38,7 @@ jobs:
   test:
     name: Test ${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
-    needs: lint
+    needs: flake
 
     strategy:
       fail-fast: false
