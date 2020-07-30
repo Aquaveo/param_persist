@@ -64,7 +64,7 @@ jobs:
         run: |
           pytest --cov ./param_persist --cov-append --cov-report=term-missing
           coverage report
-          coverage html -d coverage_html --fail-under 0
+          coverage html -d coverage_html --fail-under 100
 
   # The Deploy Job
   deploy:
