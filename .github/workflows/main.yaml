@@ -58,6 +58,11 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install coverage pytest==5.4.1 pytest-cov
+          pip install -e .
+          pytest --cov ./param_persist --cov-append --cov-report=term-missing
+          coverage report
+          coverage html -d coverage_html --fail-under 0
 
   # The Deploy Job
   deploy:
