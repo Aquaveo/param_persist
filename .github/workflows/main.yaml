@@ -61,6 +61,7 @@ jobs:
           pip install coverage pytest==5.4.1 pytest-cov
           pip install -e .
       - name: Run Tests on ${{ matrix.python-version }} on ${{ matrix.platform }}
+        run: |
           pytest --cov ./param_persist --cov-append --cov-report=term-missing
           coverage report
           coverage html -d coverage_html --fail-under 0
