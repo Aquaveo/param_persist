@@ -12,7 +12,7 @@ import uuid
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-from . import Base
+from param_persist.sqlalchemy.models import Base
 
 
 class InstanceModel(Base):
@@ -20,10 +20,10 @@ class InstanceModel(Base):
     __tablename__ = 'instances'
 
     id = Column(String, primary_key=True, default=str(uuid.uuid4()), unique=True, nullable=False)
-    class_name = Column(String)
+    class_path = Column(String)
 
     params = relationship('ParamModel', back_populates='instance', cascade='all, delete, delete-orphan')
 
     def __repr__(self):
         """The __repr__ overloaded function."""
-        return f'<Instance(id="{self.id}", class_name="{self.class_name}")>'
+        return f'<Instance(id="{self.id}", class_path="{self.class_path}")>'

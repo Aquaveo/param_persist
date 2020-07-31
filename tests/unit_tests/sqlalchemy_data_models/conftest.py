@@ -12,7 +12,7 @@ import uuid
 
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 from param_persist.sqlalchemy.models import Base, InstanceModel, ParamModel
 
@@ -25,17 +25,26 @@ def engine():
 
 
 @pytest.fixture(scope='session')
-def session(engine):
+def session_factory(engine):
+    """Factory to create clean session for each test."""
+    return scoped_session(sessionmaker(bind=engine))
+
+
+@pytest.fixture(scope='session')
+def session(session_factory):
     """Create session."""
-    _session = sessionmaker(bind=engine)
-    session = _session()
-    return session
+    _session = session_factory()
+
+    yield _session
+
+    _session.rollback()
+    _session.close()
 
 
 @pytest.fixture(scope='session')
 def db(engine, session):
     """Create session-wide database."""
-    Base.create_all(engine)
+    Base.metadata.create_all(engine)
 
     # Instances
     instance_1 = InstanceModel(id=str(uuid.uuid4()), class_path='paramclass.param.ParamClass1')

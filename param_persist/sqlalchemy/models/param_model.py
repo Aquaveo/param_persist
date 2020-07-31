@@ -27,4 +27,4 @@ class ParamModel(Base):
 
     def __repr__(self):
         """The __repr__ overloaded function."""
-        return f'<Instance(id="{self.id}", instance_id="{self.instance_id}")>'
+        return f'<Param(id="{self.id}", instance_id="{self.instance_id}")>'
