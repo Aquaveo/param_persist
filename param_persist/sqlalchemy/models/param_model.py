@@ -14,7 +14,7 @@ class ParamModel(Base):
     """The ParamModel."""
     __tablename__ = 'params'
 
-    id = Column(CHAR(35), primary_key=True, default=str(uuid.uuid4()), unique=True, nullable=False)
+    id = Column(CHAR(36), primary_key=True, default=str(uuid.uuid4()), unique=True, nullable=False)
     instance_id = Column(String, ForeignKey('instances.id'))
     value = Column(String)
 
