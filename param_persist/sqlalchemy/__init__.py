@@ -1,8 +1,5 @@
-"""The __init__.py file for the sqlalchemy submodule.
+"""The submodule containing the sqlalchemy data model and functions for persisting to sql.
+
 
 This file was generated on July 30, 2020
 """
-__author__ = "Gage Larsen"
-__copyright__ = "Copyright: (c) Aquaveo 2020"
-__maintainer__ = "Gage Larsen"
-__email__ = "glarsen@aquaveo.com"
