@@ -1,7 +1,3 @@
-"""The module containing the models for the sqlalchemy data model.
-
-This file was generated on July 30, 2020
-"""
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
