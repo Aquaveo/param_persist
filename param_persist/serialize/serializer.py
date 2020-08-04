@@ -3,7 +3,10 @@ Class for serializing param data.
 
 This file was created on August 03, 2020
 """
+import importlib
 import json
+
+from param_persist.serialize.handlers import deserialize_handlers
 
 
 class ParamSerializer(object):
@@ -57,6 +60,59 @@ class ParamSerializer(object):
         param_json = json.dumps(param_dict)
         return param_json
 
+    @classmethod
+    def from_dict(cls, param_dict):
+        """
+        Create an instance of a param clam from a dictionary.
+
+        Args:
+            param_dict (dict): A dictionary representation of a param class.
+
+        Returns:
+            An instance of a param class defined by the dictionary.
+        """
+        class_path = param_dict.get('class_path')
+
+        if not class_path:
+            raise RuntimeError('Param not configured correctly. Missing "class_path" definition.')
+
+        dict_params = param_dict.get('params')
+
+        if not dict_params:
+            raise RuntimeError('Param not configured correctly. Missing "params" definition.')
+
+        try:
+            class_base_path, class_name = class_path.rsplit('.', 1)
+            param_module = importlib.import_module(class_base_path)
+            param_class = getattr(param_module, class_name)
+        except ImportError:
+            raise RuntimeError(f'Defined param class "class_path" was not importable. Given path is "{class_path}"')
+
+        param_object = param_class()
+
+        for item in dict_params:
+            handler = deserialize_handlers[item['type']]
+            setattr(param_object, item['name'], handler(item['value']))
+            print(item['name'])
+            print(param_object.get_param_values())
+
+        return param_object
+
+    @classmethod
+    def from_json(cls, param_json):
+        """
+        Create an instance of a param class from json string.
+
+        Args:
+            param_json (str): A json string representation of a param class.
+
+        Returns:
+            An instance of a param class defined by the json string.
+        """
+        param_dict = json.loads(param_json)
+        param_instance = cls.from_dict(param_dict)
+        return param_instance
+
     @staticmethod
     def _param_class_to_names_values(param_class):
         """
@@ -75,12 +131,11 @@ class ParamSerializer(object):
         names = []
         values = []
         for item in cls_list:
-            cls_name = item[0]
             par_cls = item[3]
             for i in range(len(item[1])):
                 name = item[1][i]
                 val = getattr(par_cls, name)
-                names.append(f'{cls_name}.{name}')
+                names.append(f'{name}')
                 values.append(val)
         return names, values
 
