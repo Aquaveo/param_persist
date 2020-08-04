@@ -93,8 +93,6 @@ class ParamSerializer(object):
         for item in dict_params:
             handler = deserialize_handlers[item['type']]
             setattr(param_object, item['name'], handler(item['value']))
-            print(item['name'])
-            print(param_object.get_param_values())
 
         return param_object
 
