@@ -62,7 +62,7 @@ jobs:
           pip install -e .
       - name: Run Tests on ${{ matrix.python-version }} on ${{ matrix.platform }}
         run: |
-          pytest --cov ./param_persist --cov-append --cov-report=term-missing
+          pytest --cov ./param_persist --cov-report=term-missing --cache-clear
           coverage report
           coverage html -d coverage_html --fail-under 100
 
