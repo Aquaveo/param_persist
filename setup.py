@@ -10,10 +10,12 @@ release_package = app_package
 
 requirements = [
     'sqlalchemy',
+    'param',
 ]
 
 test_requirements = [
-    'pytest==5.4.1'
+    'pytest==5.4.1',
+    'testfixtures==6.14.1',
 ]
 
 setup_directory = path.abspath(path.dirname(__file__))

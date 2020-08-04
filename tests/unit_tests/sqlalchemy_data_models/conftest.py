@@ -1,4 +1,5 @@
-"""The base conftest.py for the unit tests.
+"""
+PyTest configuration for the sqlalchemy data models tests.
 
 This file was generated on July 30, 2020
 """
