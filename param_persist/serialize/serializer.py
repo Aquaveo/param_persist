@@ -86,7 +86,8 @@ class ParamSerializer(object):
 
     @staticmethod
     def _names_and_params_from_class(param_class):
-        """Returns a list of param names and objects.
+        """
+        Returns a list of param names and objects.
 
         Args:
            param_class (param.Parameterized): class with param objects

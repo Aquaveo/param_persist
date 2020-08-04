@@ -14,20 +14,26 @@ from param_persist.sqlalchemy.models import Base, InstanceModel, ParamModel
 
 @pytest.fixture(scope='session')
 def engine():
-    """Create engine."""
+    """
+    Create engine.
+    """
     engine = create_engine('sqlite:///:memory:', echo=False)
     return engine
 
 
 @pytest.fixture(scope='session')
 def session_factory(engine):
-    """Factory to create clean session for each test."""
+    """
+    Factory to create clean session for each test.
+    """
     return scoped_session(sessionmaker(bind=engine))
 
 
 @pytest.fixture(scope='session')
 def session(session_factory):
-    """Create session."""
+    """
+    Create session.
+    """
     _session = session_factory()
 
     yield _session
@@ -38,7 +44,9 @@ def session(session_factory):
 
 @pytest.fixture(scope='session')
 def db(engine, session):
-    """Create session-wide database."""
+    """
+    Create session-wide database.
+    """
     Base.metadata.create_all(engine)
 
     # Instances

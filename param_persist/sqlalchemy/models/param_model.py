@@ -1,4 +1,5 @@
-"""The param model for the param sqlalchemy features.
+"""
+The param model for the param sqlalchemy features.
 
 This file was generated on July 30, 2020
 """
@@ -11,7 +12,9 @@ from . import Base
 
 
 class ParamModel(Base):
-    """The ParamModel."""
+    """
+    The ParamModel.
+    """
     __tablename__ = 'params'
 
     id = Column(CHAR(36), primary_key=True, default=str(uuid.uuid4()), unique=True, nullable=False)
@@ -21,5 +24,7 @@ class ParamModel(Base):
     instance = relationship('InstanceModel', back_populates='params')
 
     def __repr__(self):
-        """The __repr__ overloaded function."""
+        """
+        The __repr__ overloaded function.
+        """
         return f'<Param(id="{self.id}", instance_id="{self.instance_id}")>'
