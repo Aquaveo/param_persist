@@ -3,7 +3,10 @@ Class for serializing param data.
 
 This file was created on August 03, 2020
 """
+import importlib
 import json
+
+from param_persist.serialize.handlers import deserialize_handlers
 
 
 class ParamSerializer(object):
@@ -25,15 +28,16 @@ class ParamSerializer(object):
             parameterized_object.__module__,
             parameterized_object.__class__.__name__,
         ])
-        param_names, param_values = cls._param_class_to_names_values(parameterized_object)
+        param_names, param_values, params = cls._param_class_to_names_values(parameterized_object)
 
         param_list = []
         for i in range(0, len(param_names)):
+            parameter_type = type(params[i])
             param_list.append(
                 {
                     'name': param_names[i],
                     'value': param_values[i],
-                    'type': param_values[i].__class__.__name__,
+                    'type': '.'.join([parameter_type.__module__, parameter_type.__name__]),
                 }
             )
         param_dict = {
@@ -57,6 +61,57 @@ class ParamSerializer(object):
         param_json = json.dumps(param_dict)
         return param_json
 
+    @classmethod
+    def from_dict(cls, param_dict):
+        """
+        Create an instance of a param clam from a dictionary.
+
+        Args:
+            param_dict (dict): A dictionary representation of a param class.
+
+        Returns:
+            An instance of a param class defined by the dictionary.
+        """
+        class_path = param_dict.get('class_path')
+
+        if not class_path:
+            raise RuntimeError('Param not configured correctly. Missing "class_path" definition.')
+
+        params = param_dict.get('params')
+
+        if not params:
+            raise RuntimeError('Param not configured correctly. Missing "params" definition.')
+
+        try:
+            class_base_path, class_name = class_path.rsplit('.', 1)
+            param_module = importlib.import_module(class_base_path)
+            parameterized_class = getattr(param_module, class_name)
+        except ImportError:
+            raise RuntimeError(f'Defined param class "class_path" was not importable. Given path is "{class_path}"')
+
+        param_object = parameterized_class()
+
+        for item in params:
+            handler = deserialize_handlers[item['type']]
+            setattr(param_object, item['name'], handler(item['value']))
+
+        return param_object
+
+    @classmethod
+    def from_json(cls, param_json):
+        """
+        Create an instance of a param class from json string.
+
+        Args:
+            param_json (str): A json string representation of a param class.
+
+        Returns:
+            An instance of a param class defined by the json string.
+        """
+        param_dict = json.loads(param_json)
+        param_instance = cls.from_dict(param_dict)
+        return param_instance
+
     @staticmethod
     def _param_class_to_names_values(param_class):
         """
@@ -69,20 +124,19 @@ class ParamSerializer(object):
             names(list(str)), values(list(values))
         """
         cls_name = param_class.__class__.__name__
-        pnames, params = ParamSerializer._names_and_params_from_class(param_class)
-        cls_list = [(cls_name, pnames, params, param_class)]
+        param_names, params = ParamSerializer._names_and_params_from_class(param_class)
+        cls_list = [(cls_name, param_names, params, param_class)]
 
         names = []
         values = []
         for item in cls_list:
-            cls_name = item[0]
             par_cls = item[3]
             for i in range(len(item[1])):
                 name = item[1][i]
                 val = getattr(par_cls, name)
-                names.append(f'{cls_name}.{name}')
+                names.append(f'{name}')
                 values.append(val)
-        return names, values
+        return names, values, params
 
     @staticmethod
     def _names_and_params_from_class(param_class):
