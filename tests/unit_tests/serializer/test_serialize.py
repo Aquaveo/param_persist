@@ -31,22 +31,22 @@ def test_serialize_to_dict():
             {
                 'name': 'number_field',
                 'value': 0.5,
-                'type': 'float',
+                'type': 'param.Number',
             },
             {
                 'name': 'integer_field',
                 'value': 1,
-                'type': 'int',
+                'type': 'param.Integer',
             },
             {
                 'name': 'string_field',
                 'value': 'My String',
-                'type': 'str',
+                'type': 'param.parameterized.String',
             },
             {
                 'name': 'bool_field',
                 'value': False,
-                'type': 'bool',
+                'type': 'param.Boolean',
             },
         ],
     }
@@ -66,10 +66,10 @@ def test_serialize_to_json():
 
     expected = '{"class_path": "tests.unit_tests.serializer.test_serialize.TestParam", ' \
                '"params": [' \
-               '{"name": "bool_field", "value": false, "type": "bool"}, ' \
-               '{"name": "integer_field", "value": 1, "type": "int"}, ' \
-               '{"name": "number_field", "value": 0.5, "type": "float"}, ' \
-               '{"name": "string_field", "value": "My String", "type": "str"}' \
+               '{"name": "bool_field", "value": false, "type": "param.Boolean"}, ' \
+               '{"name": "integer_field", "value": 1, "type": "param.Integer"}, ' \
+               '{"name": "number_field", "value": 0.5, "type": "param.Number"}, ' \
+               '{"name": "string_field", "value": "My String", "type": "param.parameterized.String"}' \
                ']}'
 
     assert serialized_json == expected

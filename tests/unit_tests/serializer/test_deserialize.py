@@ -18,22 +18,22 @@ def test_deserialize_from_dict():
             {
                 'name': 'number_field',
                 'value': 1.7,
-                'type': 'float',
+                'type': 'param.Number',
             },
             {
                 'name': 'integer_field',
                 'value': 29,
-                'type': 'int',
+                'type': 'param.Integer',
             },
             {
                 'name': 'string_field',
                 'value': 'Deserialize String',
-                'type': 'str',
+                'type': 'param.parameterized.String',
             },
             {
                 'name': 'bool_field',
                 'value': True,
-                'type': 'bool',
+                'type': 'param.Boolean',
             },
         ],
     }
@@ -70,7 +70,7 @@ def test_bad_class_path_in_dict():
             {
                 'name': 'number_field',
                 'value': 1.7,
-                'type': 'float',
+                'type': 'param.Number',
             },
         ]
     }
@@ -91,22 +91,22 @@ def test_missing_params_in_dict():
             {
                 'name': 'number_field',
                 'value': 1.7,
-                'type': 'float',
+                'type': 'param.Number',
             },
             {
                 'name': 'integer_field',
                 'value': 29,
-                'type': 'int',
+                'type': 'param.Integer',
             },
             {
                 'name': 'string_field',
                 'value': 'Deserialize String',
-                'type': 'str',
+                'type': 'param.parameterized.String',
             },
             {
                 'name': 'bool_field',
                 'value': True,
-                'type': 'bool',
+                'type': 'param.Boolean',
             },
         ],
     }
@@ -123,10 +123,10 @@ def test_deserialize_from_json():
     """
     param_json = '{"class_path": "tests.unit_tests.serializer.test_serialize.TestParam", ' \
                  '"params": [' \
-                 '{"name": "bool_field", "value": true, "type": "bool"}, ' \
-                 '{"name": "integer_field", "value": 29, "type": "int"}, ' \
-                 '{"name": "number_field", "value": 1.7, "type": "float"}, ' \
-                 '{"name": "string_field", "value": "Deserialize String", "type": "str"}' \
+                 '{"name": "bool_field", "value": true, "type": "param.Boolean"}, ' \
+                 '{"name": "integer_field", "value": 29, "type": "param.Integer"}, ' \
+                 '{"name": "number_field", "value": 1.7, "type": "param.Number"}, ' \
+                 '{"name": "string_field", "value": "Deserialize String", "type": "param.parameterized.String"}' \
                  ']}'
 
     param_object = ParamSerializer.from_json(param_json)
