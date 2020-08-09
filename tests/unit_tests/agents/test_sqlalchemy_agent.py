@@ -43,8 +43,11 @@ def test_save_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_sessio
     for p in param_models:
         assert p.instance_id == instance_model_id
         param_dict = json.loads(p.value)
+        assert getattr(parameterized_class, param_dict['name']) == param_dict['value']
+        parameter_type = type(getattr(parameterized_class.param, param_dict['name']))
+        base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
+        assert base_type == param_dict['type']
 
-    print('-------' + '\n'.join(str(param_models)))
     assert param_model_count == 4
 
 
