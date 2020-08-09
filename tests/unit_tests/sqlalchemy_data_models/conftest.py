@@ -18,6 +18,7 @@ def engine():
     Create engine.
     """
     engine = create_engine('sqlite:///:memory:', echo=False)
+    Base.metadata.create_all(engine)
     return engine
 
 
@@ -47,8 +48,6 @@ def db(engine, session):
     """
     Create session-wide database.
     """
-    Base.metadata.create_all(engine)
-
     # Instances
     instance_1 = InstanceModel(id=str(uuid.uuid4()), class_path='paramclass.param.ParamClass1')
     instance_2 = InstanceModel(id=str(uuid.uuid4()), class_path='paramclass.param.ParamClass1')
