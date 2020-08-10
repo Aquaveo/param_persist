@@ -45,18 +45,25 @@ class SqlAlchemyAgent(AgentBase):
 
     def load(self, instance_id):
         db_session = self.session_maker()
-        new_instance = None
 
         try:
-            instance_model = db_session.query(InstanceModel).filter(id=instance_id)
-            print(instance_model)
+            instance_model = db_session.query(InstanceModel).filter_by(id=instance_id).first()
+            param_models = db_session.query(ParamModel).filter_by(instance_id=instance_id)
+            param_models_json = [x.value for x in param_models]
+            param_models_joined_json = ", ".join(param_models_json).replace("'", '"')
+            parameterized_json = '{' \
+                                 f'  "class_path": "{instance_model.class_path}",' \
+                                 f'  "params": [{param_models_joined_json}]' \
+                                 '}'
+            new_instance = ParamSerializer.from_json(parameterized_json)
 
         except Exception:
             db_session.rollback()
             raise
         finally:
             db_session.close()
-        return str(new_instance)
+
+        return new_instance
 
 
     def delete(self, instance_id):
@@ -64,3 +71,27 @@ class SqlAlchemyAgent(AgentBase):
 
     def update(self, instance, instance_id):
         pass
+
+    @staticmethod
+    def _names_and_params_from_class(param_class):
+        """
+        Returns a list of param names and objects.
+
+        Args:
+           param_class (param.Parameterized): class with param objects
+
+        Return:
+            names(list(str)), params(list(param objects)
+        """
+        names = []
+        params = []
+        p = param_class.param
+        lst = p.get_param_values()
+        for item in lst:
+            if item[0] in ['name']:
+                continue
+            obj = getattr(p, item[0])
+            if obj is not None:
+                names.append(item[0])
+                params.append(obj)
+        return names, params

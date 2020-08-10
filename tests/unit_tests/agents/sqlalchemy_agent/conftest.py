@@ -11,42 +11,56 @@ import uuid
 from param_persist.sqlalchemy.models import Base, InstanceModel, ParamModel
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def sqlalchemy_engine():
     """
     Create engine.
     """
-    engine = create_engine('sqlite:///', echo=False)
+    engine = create_engine('sqlite:///:memory:', echo=False)
     Base.metadata.create_all(engine)
     return engine
 
 
-@pytest.fixture(scope='session')
-def sqlalchemy_session(sqlalchemy_engine):
+@pytest.fixture()
+def sqlalchemy_session_factory(sqlalchemy_engine):
     """Returns an sqlalchemy session, and after the test tears down everything properly."""
-    connection = sqlalchemy_engine.connect()
-    # begin the nested transaction
-    transaction = connection.begin()
-    # use the connection with the already started transaction
-    session = Session(bind=connection)
+    sessions = []
+    transactions = []
+    connections = []
 
-    yield session
+    def _sqlalchemy_session_factory():
+        connection = sqlalchemy_engine.connect()
+        connections.append(connection)
+        # begin the nested transaction
+        transaction = connection.begin()
+        transactions.append(transaction)
+        # use the connection with the already started transaction
+        session = Session(bind=connection)
+        sessions.append(session)
 
-    session.close()
-    # roll back the broader transaction
-    transaction.rollback()
-    # put back the connection to the connection pool
-    connection.close()
+        return session
+
+    yield _sqlalchemy_session_factory
+
+    for session in sessions:
+        session.close()
+    for transaction in transactions:
+        transaction.rollback()
+    for connection in connections:
+        connection.close()
 
 
-@pytest.fixture(scope='session')
-def sqlalchemy_instance_model_complete(sqlalchemy_engine, sqlalchemy_session):
+@pytest.fixture()
+def sqlalchemy_instance_model_complete(sqlalchemy_engine, sqlalchemy_session_factory):
     """
     Create session-wide database.
     """
+    sqlalchemy_session = sqlalchemy_session_factory()
+
     # Instances
     instance_1 = InstanceModel(id=str(uuid.uuid4()),
-                               class_path='tests.unit_tests.agents.sqlalchemy_agent.test_sqlalchemy_agent.TestParam')
+                               class_path='tests.unit_tests.agents.sqlalchemy_agent.'
+                                          'test_sqlalchemy_agent.AgentTestParam')
 
     sqlalchemy_session.add(instance_1)
 
@@ -55,14 +69,14 @@ def sqlalchemy_instance_model_complete(sqlalchemy_engine, sqlalchemy_session):
                                 value='{"name": "number_field", "type": "param.Number", "value": 1.7}',
                                 instance_id=instance_1.id)
     param_1_integer = ParamModel(id=str(uuid.uuid4()),
-                                 value='{"name": "integer_field", "type": "param.Number", "value": 9}',
+                                 value='{"name": "integer_field", "type": "param.Integer", "value": 9}',
                                  instance_id=instance_1.id)
     param_1_string = ParamModel(id=str(uuid.uuid4()),
                                 value='{"name": "string_field", "type": "param.parameterized.String", '
                                       '"value": "Test String"}',
                                 instance_id=instance_1.id)
     param_1_bool = ParamModel(id=str(uuid.uuid4()),
-                              value='{"name": "boolean_field", "type": "param.Boolean", "value": true}',
+                              value='{"name": "bool_field", "type": "param.Boolean", "value": true}',
                               instance_id=instance_1.id)
 
     sqlalchemy_session.add(param_1_number)
@@ -75,14 +89,17 @@ def sqlalchemy_instance_model_complete(sqlalchemy_engine, sqlalchemy_session):
     return instance_1
 
 
-@pytest.fixture(scope='session')
-def sqlalchemy_instance_model_missing(sqlalchemy_engine, sqlalchemy_session):
+@pytest.fixture()
+def sqlalchemy_instance_model_missing(sqlalchemy_engine, sqlalchemy_session_factory):
     """
     Create session-wide database.
     """
+    sqlalchemy_session = sqlalchemy_session_factory()
+
     # Instances
     instance_1 = InstanceModel(id=str(uuid.uuid4()),
-                               class_path='tests.unit_tests.agents.sqlalchemy_agent.test_sqlalchemy_agent.TestParam')
+                               class_path='tests.unit_tests.agents.sqlalchemy_agent.'
+                                          'test_sqlalchemy_agent.AgentTestParam')
 
     sqlalchemy_session.add(instance_1)
 
@@ -91,7 +108,7 @@ def sqlalchemy_instance_model_missing(sqlalchemy_engine, sqlalchemy_session):
                                 value='{"name": "number_field", "type": "param.Number", "value": 1.7}',
                                 instance_id=instance_1.id)
     param_1_bool = ParamModel(id=str(uuid.uuid4()),
-                              value='{"name": "boolean_field", "type": "param.Boolean", "value": true}',
+                              value='{"name": "bool_field", "type": "param.Boolean", "value": true}',
                               instance_id=instance_1.id)
 
     sqlalchemy_session.add(param_1_number)
@@ -102,14 +119,17 @@ def sqlalchemy_instance_model_missing(sqlalchemy_engine, sqlalchemy_session):
     return instance_1
 
 
-@pytest.fixture(scope='session')
-def sqlalchemy_instance_model_extra(sqlalchemy_engine, sqlalchemy_session):
+@pytest.fixture()
+def sqlalchemy_instance_model_extra(sqlalchemy_engine, sqlalchemy_session_factory):
     """
     Create session-wide database.
     """
+    sqlalchemy_session = sqlalchemy_session_factory()
+
     # Instances
     instance_1 = InstanceModel(id=str(uuid.uuid4()),
-                               class_path='tests.unit_tests.agents.sqlalchemy_agent.test_sqlalchemy_agent.TestParam')
+                               class_path='tests.unit_tests.agents.sqlalchemy_agent.'
+                                          'test_sqlalchemy_agent.AgentTestParam')
 
     sqlalchemy_session.add(instance_1)
 
@@ -118,14 +138,14 @@ def sqlalchemy_instance_model_extra(sqlalchemy_engine, sqlalchemy_session):
                                 value='{"name": "number_field", "type": "param.Number", "value": 1.7}',
                                 instance_id=instance_1.id)
     param_1_integer = ParamModel(id=str(uuid.uuid4()),
-                                 value='{"name": "integer_field", "type": "param.Number", "value": 9}',
+                                 value='{"name": "integer_field", "type": "param.Integer", "value": 9}',
                                  instance_id=instance_1.id)
     param_1_string = ParamModel(id=str(uuid.uuid4()),
                                 value='{"name": "string_field", "type": "param.parameterized.String", '
                                       '"value": "Test String"}',
                                 instance_id=instance_1.id)
     param_1_bool = ParamModel(id=str(uuid.uuid4()),
-                              value='{"name": "boolean_field", "type": "param.Boolean", "value": true}',
+                              value='{"name": "bool_field", "type": "param.Boolean", "value": true}',
                               instance_id=instance_1.id)
     param_1_garbage1 = ParamModel(id=str(uuid.uuid4()),
                                   value='{"name": "garbage_field_2", "type": "param.parameterized.String", '
