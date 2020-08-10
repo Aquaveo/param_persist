@@ -44,7 +44,20 @@ class SqlAlchemyAgent(AgentBase):
         return str(new_instance_uuid)
 
     def load(self, instance_id):
-        pass
+        db_session = self.session_maker()
+        new_instance = None
+
+        try:
+            instance_model = db_session.query(InstanceModel).filter(id=instance_id)
+            print(instance_model)
+
+        except Exception:
+            db_session.rollback()
+            raise
+        finally:
+            db_session.close()
+        return str(new_instance)
+
 
     def delete(self, instance_id):
         pass
