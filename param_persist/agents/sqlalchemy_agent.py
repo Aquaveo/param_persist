@@ -65,33 +65,8 @@ class SqlAlchemyAgent(AgentBase):
 
         return new_instance
 
-
     def delete(self, instance_id):
         pass
 
     def update(self, instance, instance_id):
         pass
-
-    @staticmethod
-    def _names_and_params_from_class(param_class):
-        """
-        Returns a list of param names and objects.
-
-        Args:
-           param_class (param.Parameterized): class with param objects
-
-        Return:
-            names(list(str)), params(list(param objects)
-        """
-        names = []
-        params = []
-        p = param_class.param
-        lst = p.get_param_values()
-        for item in lst:
-            if item[0] in ['name']:
-                continue
-            obj = getattr(p, item[0])
-            if obj is not None:
-                names.append(item[0])
-                params.append(obj)
-        return names, params

@@ -6,6 +6,9 @@ This file was created on August 06, 2020
 import json
 import param
 
+import pytest
+from unittest.mock import patch
+
 from param_persist.agents.sqlalchemy_agent import SqlAlchemyAgent
 from param_persist.sqlalchemy.models import InstanceModel, ParamModel
 
@@ -50,6 +53,17 @@ def test_save_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_sessio
         assert base_type == param_dict['type']
 
     assert param_model_count == 4
+
+
+def test_save_exception(sqlalchemy_engine):
+    agent = SqlAlchemyAgent(sqlalchemy_engine)
+    with patch('param_persist.serialize.serializer.ParamSerializer.to_dict',
+               side_effect=Exception('Mock Exception for Coverage: Raised when calling to_dict')):
+        with pytest.raises(Exception) as excinfo:
+            parameterized_class = AgentTestParam()
+            agent.save(parameterized_class)
+
+    assert 'Mock Exception for Coverage: Raised when calling to_dict' in str(excinfo.value)
 
 
 def test_load_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_session_factory,
@@ -127,6 +141,16 @@ def test_load_param_extra_param_fields(sqlalchemy_engine, sqlalchemy_session_fac
         parameter_type = type(getattr(parameterized_instance.param, param_dict['name']))
         base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
         assert base_type == param_dict['type']
+
+
+def test_load_param_with_invalid_class(sqlalchemy_engine, sqlalchemy_instance_invalid_class):
+    agent = SqlAlchemyAgent(sqlalchemy_engine)
+
+    with pytest.raises(Exception) as excinfo:
+        agent.load(sqlalchemy_instance_invalid_class.id)
+
+    assert 'Defined param class "class_path" was not importable. ' \
+           'Given path is "this.is.not.a.valid.module.InvalidParamClass"' in str(excinfo.value)
 
 
 def test_delete_param_using_sqlalchemy_engine():

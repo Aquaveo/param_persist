@@ -166,3 +166,41 @@ def sqlalchemy_instance_model_extra(sqlalchemy_engine, sqlalchemy_session_factor
 
     return instance_1
 
+
+@pytest.fixture()
+def sqlalchemy_instance_invalid_class(sqlalchemy_engine, sqlalchemy_session_factory):
+    """
+    Create session-wide database.
+    """
+    sqlalchemy_session = sqlalchemy_session_factory()
+
+    # Instances
+    instance_1 = InstanceModel(id=str(uuid.uuid4()),
+                               class_path='this.is.not.a.valid.module.InvalidParamClass')
+
+    sqlalchemy_session.add(instance_1)
+
+    # Params for Instance 1
+    param_1_number = ParamModel(id=str(uuid.uuid4()),
+                                value='{"name": "number_field", "type": "param.Number", "value": 1.7}',
+                                instance_id=instance_1.id)
+    param_1_integer = ParamModel(id=str(uuid.uuid4()),
+                                 value='{"name": "integer_field", "type": "param.Integer", "value": 9}',
+                                 instance_id=instance_1.id)
+    param_1_string = ParamModel(id=str(uuid.uuid4()),
+                                value='{"name": "string_field", "type": "param.parameterized.String", '
+                                      '"value": "Test String"}',
+                                instance_id=instance_1.id)
+    param_1_bool = ParamModel(id=str(uuid.uuid4()),
+                              value='{"name": "bool_field", "type": "param.Boolean", "value": true}',
+                              instance_id=instance_1.id)
+
+    sqlalchemy_session.add(param_1_number)
+    sqlalchemy_session.add(param_1_integer)
+    sqlalchemy_session.add(param_1_string)
+    sqlalchemy_session.add(param_1_bool)
+
+    sqlalchemy_session.commit()
+
+    return instance_1
+
