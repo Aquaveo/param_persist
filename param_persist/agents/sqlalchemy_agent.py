@@ -66,7 +66,16 @@ class SqlAlchemyAgent(AgentBase):
         return new_instance
 
     def delete(self, instance_id):
-        pass
+        db_session = self.session_maker()
+
+        try:
+            instance_model = db_session.query(InstanceModel).get(instance_id)
+
+        except Exception:
+            db_session.rollback()
+            raise
+        finally:
+            db_session.close()
 
     def update(self, instance, instance_id):
         pass

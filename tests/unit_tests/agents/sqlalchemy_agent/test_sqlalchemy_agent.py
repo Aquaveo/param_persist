@@ -153,7 +153,19 @@ def test_load_param_with_invalid_class(sqlalchemy_engine, sqlalchemy_instance_in
            'Given path is "this.is.not.a.valid.module.InvalidParamClass"' in str(excinfo.value)
 
 
-def test_delete_param_using_sqlalchemy_engine():
+def test_delete_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_session_factory,
+                                              sqlalchemy_instance_model_complete):
+    agent = SqlAlchemyAgent(sqlalchemy_engine)
+    sqlalchemy_session = sqlalchemy_session_factory()
+    assert 1 == sqlalchemy_session.query(InstanceModel).count()
+
+    instance_model = sqlalchemy_session.query(InstanceModel).filter_by(id=sqlalchemy_instance_model_complete.id).first()
+    agent.delete(instance_model.id)
+
+    assert 0 == sqlalchemy_session.query(InstanceModel).count()
+
+
+def test_delete_param_exception():
     pass
 
 

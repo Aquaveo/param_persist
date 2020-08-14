@@ -16,10 +16,9 @@ def sqlalchemy_engine():
     """
     Create engine.
     """
-    engine = create_engine('sqlite:///:memory:', echo=False)
+    engine = create_engine('sqlite:///test2.db', echo=False)
     Base.metadata.create_all(engine)
     return engine
-
 
 @pytest.fixture()
 def sqlalchemy_session_factory(sqlalchemy_engine):
