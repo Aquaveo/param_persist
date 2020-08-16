@@ -3,24 +3,27 @@ The conftest.py for the the agents test fixtures.
 
 This file was created on August 06, 2020
 """
+import uuid
+
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, Session
-import uuid
+from sqlalchemy.orm import Session
 
 from param_persist.sqlalchemy.models import Base, InstanceModel, ParamModel
 
 
-@pytest.fixture()
+@pytest.yield_fixture(scope='function')
 def sqlalchemy_engine():
     """
     Create engine.
     """
-    engine = create_engine('sqlite:///test2.db', echo=False)
+    engine = create_engine('sqlite:///:memory:', echo=False)
     Base.metadata.create_all(engine)
-    return engine
+    yield engine
+    Base.metadata.drop_all(engine)
 
-@pytest.fixture()
+
+@pytest.yield_fixture(scope='function')
 def sqlalchemy_session_factory(sqlalchemy_engine):
     """Returns an sqlalchemy session, and after the test tears down everything properly."""
     sessions = []
@@ -50,7 +53,7 @@ def sqlalchemy_session_factory(sqlalchemy_engine):
 
 
 @pytest.fixture()
-def sqlalchemy_instance_model_complete(sqlalchemy_engine, sqlalchemy_session_factory):
+def sqlalchemy_instance_model_complete(sqlalchemy_session_factory):
     """
     Create session-wide database.
     """
@@ -89,7 +92,7 @@ def sqlalchemy_instance_model_complete(sqlalchemy_engine, sqlalchemy_session_fac
 
 
 @pytest.fixture()
-def sqlalchemy_instance_model_missing(sqlalchemy_engine, sqlalchemy_session_factory):
+def sqlalchemy_instance_model_missing(sqlalchemy_session_factory):
     """
     Create session-wide database.
     """
@@ -119,7 +122,7 @@ def sqlalchemy_instance_model_missing(sqlalchemy_engine, sqlalchemy_session_fact
 
 
 @pytest.fixture()
-def sqlalchemy_instance_model_extra(sqlalchemy_engine, sqlalchemy_session_factory):
+def sqlalchemy_instance_model_extra(sqlalchemy_session_factory):
     """
     Create session-wide database.
     """
@@ -167,7 +170,7 @@ def sqlalchemy_instance_model_extra(sqlalchemy_engine, sqlalchemy_session_factor
 
 
 @pytest.fixture()
-def sqlalchemy_instance_invalid_class(sqlalchemy_engine, sqlalchemy_session_factory):
+def sqlalchemy_instance_invalid_class(sqlalchemy_session_factory):
     """
     Create session-wide database.
     """
@@ -202,4 +205,3 @@ def sqlalchemy_instance_invalid_class(sqlalchemy_engine, sqlalchemy_session_fact
     sqlalchemy_session.commit()
 
     return instance_1
-
