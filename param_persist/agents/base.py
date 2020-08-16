@@ -29,21 +29,21 @@ class AgentBase(ABC):
         raise NotImplementedError('The "save" function must be overridden in the agent child class.')
 
     @abstractmethod
-    def load(self, instance_id):
+    def load(self, **kwargs):
         """
         An abstract function to load a persisted param class.
         """
         raise NotImplementedError('The "load" function must be overridden in the agent child class.')
 
     @abstractmethod
-    def delete(self, instance_id):
+    def delete(self, **kwargs):
         """
         An abstract function to delete a persisted param class.
         """
         raise NotImplementedError('The "delete" function must be overridden in the agent child class.')
 
     @abstractmethod
-    def update(self, instance, instance_id):
+    def update(self, instance, **kwargs):
         """
         An abstract function to update a persisted param class.
         """
