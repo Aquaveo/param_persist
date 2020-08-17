@@ -18,6 +18,9 @@ log = logging.getLogger('param_persist')
 
 
 def sqlalchemy_session(wrapped_function):
+    """
+    Decorator for creating, closeing and rolling back an sqlalchemy session.
+    """
     def decorator_function(self, *args, **kwargs):
         db_session = self.make_session()
 
