@@ -4,6 +4,7 @@ Tests for the SqlAlchemy agent.
 This file was created on August 06, 2020
 """
 import json
+import logging
 from unittest.mock import patch
 
 import param
@@ -195,15 +196,14 @@ def test_delete_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_sess
     assert 0 == sqlalchemy_session.query(InstanceModel).count()
 
 
-def test_delete_param_exception(sqlalchemy_engine):
+def test_delete_param_exception(sqlalchemy_engine, caplog):
     """
     Test the delete function of the param persist sqlalchemy agent using a bad id.
     """
     agent = SqlAlchemyAgent(sqlalchemy_engine)
-    with pytest.raises(Exception) as excinfo:
+    with caplog.at_level(logging.WARNING):
         agent.delete('not-a-valid-uuid')
-
-    assert 'unable to query database with given instance id. id="not-a-valid-uuid"' in str(excinfo.value)
+    assert 'unable to query database with given instance id. id="not-a-valid-uuid"' in str(caplog.text)
 
 
 def test_update_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_session_factory,
@@ -251,7 +251,7 @@ def test_update_param_bad_instance_id(sqlalchemy_engine):
     with pytest.raises(Exception) as excinfo:
         agent.update(parameterized_class, 'not-a-valid-uuid')
 
-    assert 'unable to query database with given instance id. id="not-a-valid-uuid"' in str(excinfo.value)
+    assert 'Parameterized instance with id "not-a-valid-uuid" does not exist.' in str(excinfo.value)
 
 
 def test_update_param_removing_attribute(sqlalchemy_engine, sqlalchemy_session_factory,

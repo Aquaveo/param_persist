@@ -22,7 +22,7 @@ class AgentBase(ABC):
         super().__init__()
 
     @abstractmethod
-    def save(self, instance):
+    def save(self, instance, **kwargs):
         """
         An abstract function to save a persisted param class.
         """

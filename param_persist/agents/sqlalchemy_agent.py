@@ -4,6 +4,7 @@ The SqlAlchemy Agent.
 This file was created on August 05, 2020
 """
 import json
+import logging
 import uuid
 
 from sqlalchemy.orm import sessionmaker
@@ -13,9 +14,12 @@ from param_persist.serialize.serializer import ParamSerializer
 from param_persist.sqlalchemy.models import InstanceModel, ParamModel
 
 
+log = logging.getLogger('param_persist')
+
+
 class SqlAlchemyAgent(AgentBase):
     """
-    An agent for persisting param objects to SQL databases.
+    An agent for persisting parameterized objects to SQL databases.
     """
 
     def __init__(self, engine):
@@ -23,19 +27,19 @@ class SqlAlchemyAgent(AgentBase):
         The __init__ function for the the SqlAlchemyAgent.
         """
         super().__init__(engine)
-        self.session_maker = sessionmaker(bind=self.engine)
+        self.make_session = sessionmaker(bind=self.engine)
 
     def save(self, instance):
         """
-        Save a param instance to a sqlalchemy database.
+        Save a parameterized instance to a sqlalchemy database.
 
         Args:
-            instance: The instance to be saved to the database.
+            instance: The parameterized instance to be saved to the database.
 
         Returns:
-            The id of the row in the database corresponding to the instance.
+            The id of the row in the database corresponding to the parameterized instance.
         """
-        db_session = self.session_maker()
+        db_session = self.make_session()
 
         try:
             serialized_param_dict = ParamSerializer.to_dict(instance)
@@ -61,15 +65,15 @@ class SqlAlchemyAgent(AgentBase):
 
     def load(self, instance_id):
         """
-        Load an instance of a param object from the database.
+        Load a parameterized instance from the database.
 
         Args:
-            instance_id: The id corresponding to the row in the database for the instance to load.
+            instance_id: The id corresponding to the row in the database for the parameterized instance to load.
 
         Returns:
-            The param instance populated from the database.
+            The parameterized instance populated from the database.
         """
-        db_session = self.session_maker()
+        db_session = self.make_session()
 
         try:
             instance_model = db_session.query(InstanceModel).filter_by(id=instance_id).first()
@@ -92,17 +96,18 @@ class SqlAlchemyAgent(AgentBase):
 
     def delete(self, instance_id):
         """
-        Delete an instance and its params from the database.
+        Delete a parameterized instance and its params from the database.
 
         Args:
-            instance_id: The id of the instance to delete.
+            instance_id: The id of the parameterized instance to delete.
         """
-        db_session = self.session_maker()
+        db_session = self.make_session()
 
         try:
             instance_model = db_session.query(InstanceModel).get(instance_id)
             if instance_model is None:
-                raise RuntimeError(f'unable to query database with given instance id. id="{instance_id}"')
+                log.warning(f'unable to query database with given instance id. id="{instance_id}"')
+                return
             db_session.delete(instance_model)
             db_session.commit()
 
@@ -114,21 +119,21 @@ class SqlAlchemyAgent(AgentBase):
 
     def update(self, instance, instance_id):
         """
-        Update the rows in the database for an instance of a param object.
+        Update the rows in the database for a parameterized instance.
 
         Args:
-            instance: The param instance to update from.
-            instance_id: The id of the param in the database to update.
+            instance: The parameterized instance to update from.
+            instance_id: The id of the parameterized instance in the database to update.
 
         Returns:
-            The instance id.
+            The parameterized instance id.
         """
-        db_session = self.session_maker()
+        db_session = self.make_session()
 
         try:
             instance_model = db_session.query(InstanceModel).get(instance_id)
             if instance_model is None:
-                raise RuntimeError(f'unable to query database with given instance id. id="{instance_id}"')
+                raise RuntimeError(f'Parameterized instance with id "{instance_id}" does not exist.')
 
             serialized_param_dict = ParamSerializer.to_dict(instance)
             instance_model.class_path = serialized_param_dict.get('class_path')
