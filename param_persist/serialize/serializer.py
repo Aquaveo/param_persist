@@ -91,7 +91,11 @@ class ParamSerializer(object):
 
         param_object = parameterized_class()
 
+        param_names, _ = cls._names_and_params_from_class(param_object)
+
         for item in params:
+            if item['name'] not in param_names:
+                continue
             handler = deserialize_handlers[item['type']]
             setattr(param_object, item['name'], handler(item['value']))
 
