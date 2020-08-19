@@ -1,0 +1,21 @@
+name: conda-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - sqlite=3.32.3=he774522_1
+  - numpy
+  - param
+  - pip:
+    - coverage==5.2.1
+    - flake8==3.8.3
+    - flake8-bugbear==20.1.4
+    - flake8-colors==0.1.6
+    - flake8-docstrings==1.5.0
+    - flake8-import-order==0.18.1
+    - flake8-polyfill==1.0.2
+    - pytest==5.4.1
+    - pytest-cov==2.10.0
+    - sqlalchemy==1.3.18
+    - testfixtures==6.14.1
+
