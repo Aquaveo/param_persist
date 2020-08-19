@@ -53,8 +53,8 @@ jobs:
       - name: Setup Python ${{ matrix.python-version }}
         uses: fdiblen/anaconda-action@0.1.7
         with:
-          pythonVersion: ${{ matrix.python-version }}
-          envFileName: environment.yml
+          python-version: ${{ matrix.python-version }}
+          env-file-name: environment.yml
       # Install Python Dependencies
       - name: Install Python Dependencies
         run: |
