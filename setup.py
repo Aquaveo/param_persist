@@ -8,16 +8,9 @@ from setuptools import find_namespace_packages, setup
 app_package = 'param_persist'
 release_package = app_package
 
-requirements = [
-    'sqlalchemy',
-    'param',
-]
+requirements = []
 
-test_requirements = [
-    'pytest==5.4.1',
-    'pytest-mock==3.2.0'
-    'testfixtures==6.14.1',
-]
+test_requirements = []
 
 setup_directory = path.abspath(path.dirname(__file__))
 with open(path.join(setup_directory, 'README.md'), encoding='utf-8') as f:
