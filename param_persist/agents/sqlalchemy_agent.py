@@ -5,14 +5,15 @@ This file was created on August 05, 2020
 """
 import json
 import logging
-import uuid
 import importlib
+import uuid
 
 from sqlalchemy.orm import sessionmaker
 
+from param.serializer import JSONSerialization
+
 from param_persist.agents.base import AgentBase
 from param_persist.sqlalchemy.models import InstanceModel, ParamModel
-from param.serializer import JSONSerialization
 
 log = logging.getLogger('param_persist')
 
@@ -173,7 +174,7 @@ class SqlAlchemyAgent(AgentBase):
     @staticmethod
     def get_param_names(param_object):
         """
-            return list of all the names in param
+        return list of all the names in param.
         """
         param_items = param_object.get_param_values()
         param_names = list()
@@ -184,6 +185,9 @@ class SqlAlchemyAgent(AgentBase):
 
     @staticmethod
     def get_param_object_from_instance(instance_model):
+        """
+        Given an instance_model, return an associated param object.
+        """
         # Getting param_object
         try:
             class_base_path, class_name = instance_model.class_path.rsplit('.', 1)
@@ -198,12 +202,15 @@ class SqlAlchemyAgent(AgentBase):
         return param_object
 
     def update_param_object(self, param_object, serialized_data):
+        """
+        Update param_object data with given serialized data. Use JSONSerialization from param to deserialize the data.
+        """
         # Update param object using deserialized data.
         param_names = self.get_param_names(param_object)
 
         # Remove extra args if needed.
         keys_to_remove = list()
-        for key, value in serialized_data.items():
+        for key, _ in serialized_data.items():
             if key not in param_names:
                 keys_to_remove.append(key)
 
@@ -221,6 +228,9 @@ class SqlAlchemyAgent(AgentBase):
 
     @staticmethod
     def load_serialized_data_from_param_model(param_models):
+        """
+        load serialized data from param models in appropriated format.
+        """
         param_models_json = [x.value for x in param_models]
         # Create serialized dictionary data in param serialized format to deserialize
         param_model_serialized_data = dict()
@@ -233,6 +243,9 @@ class SqlAlchemyAgent(AgentBase):
 
     @staticmethod
     def get_type_from_param_instance(instance, key):
+        """
+        Get the associated type from a key of an instance from the database.
+        """
         type_string = '.'.join([type(instance.param.__getitem__(key)).__module__,
                                 type(instance.param.__getitem__(key)).__name__]
                                )
@@ -240,6 +253,9 @@ class SqlAlchemyAgent(AgentBase):
 
     @staticmethod
     def get_class_path_from_param_instance(instance):
+        """
+        Get the associated class path of an instance from the database.
+        """
         class_path = ".".join([
             instance.__module__,
             instance.__class__.__name__,
