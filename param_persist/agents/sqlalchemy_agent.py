@@ -3,14 +3,15 @@ The SqlAlchemy Agent.
 
 This file was created on August 05, 2020
 """
+import importlib
+
 import json
 import logging
-import importlib
 import uuid
 
-from sqlalchemy.orm import sessionmaker
-
 from param.serializer import JSONSerialization
+
+from sqlalchemy.orm import sessionmaker
 
 from param_persist.agents.base import AgentBase
 from param_persist.sqlalchemy.models import InstanceModel, ParamModel
@@ -174,7 +175,7 @@ class SqlAlchemyAgent(AgentBase):
     @staticmethod
     def get_param_names(param_object):
         """
-        return list of all the names in param.
+        Return list of all the names in param.
         """
         param_items = param_object.get_param_values()
         param_names = list()
@@ -229,7 +230,7 @@ class SqlAlchemyAgent(AgentBase):
     @staticmethod
     def load_serialized_data_from_param_model(param_models):
         """
-        load serialized data from param models in appropriated format.
+        Load serialized data from param models in appropriated format.
         """
         param_models_json = [x.value for x in param_models]
         # Create serialized dictionary data in param serialized format to deserialize
