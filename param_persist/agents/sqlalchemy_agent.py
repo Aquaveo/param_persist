@@ -3,14 +3,13 @@ The SqlAlchemy Agent.
 
 This file was created on August 05, 2020
 """
-import importlib
 
+import importlib
 import json
 import logging
 import uuid
 
 from param.serializer import JSONSerialization
-
 from sqlalchemy.orm import sessionmaker
 
 from param_persist.agents.base import AgentBase
