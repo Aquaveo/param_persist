@@ -6,13 +6,13 @@ This file was created on August 05, 2020
 import json
 import logging
 import uuid
+import importlib
 
 from sqlalchemy.orm import sessionmaker
 
 from param_persist.agents.base import AgentBase
-from param_persist.serialize.serializer import ParamSerializer
 from param_persist.sqlalchemy.models import InstanceModel, ParamModel
-
+from param.serializer import JSONSerialization
 
 log = logging.getLogger('param_persist')
 
@@ -59,18 +59,27 @@ class SqlAlchemyAgent(AgentBase):
             The id of the row in the database corresponding to the parameterized instance.
         """
         db_session = kwargs.get('db_session', None)
-        serialized_param_dict = ParamSerializer.to_dict(instance)
+
+        # Serialize data using param JSONSerialization class
+        serialized_param = json.loads(JSONSerialization.serialize_parameters(instance))
+
+        # Remove name since we don't need it
+        serialized_param.pop('name')
+
+        # Get class path and uuid to save in InstanceModel
+        class_path = self.get_class_path_from_param_instance(instance)
         new_instance_uuid = uuid.uuid4()
-        new_instance = InstanceModel(id=str(new_instance_uuid), class_path=serialized_param_dict.get('class_path'))
+        new_instance = InstanceModel(id=str(new_instance_uuid), class_path=class_path)
         db_session.add(new_instance)
 
-        param_models = [ParamModel(id=(str(uuid.uuid4())), value=json.dumps(param),
+        param_models = [ParamModel(id=(str(uuid.uuid4())),
+                                   value=json.dumps({'name': key, 'value': value,
+                                                     'type': self.get_type_from_param_instance(instance, key)}),
                                    instance_id=str(new_instance_uuid))
-                        for param in serialized_param_dict.get('params', [])]
+                        for key, value in serialized_param.items()]
 
         for p in param_models:
             db_session.add(p)
-
         db_session.commit()
 
         return str(new_instance_uuid)
@@ -89,13 +98,15 @@ class SqlAlchemyAgent(AgentBase):
         db_session = kwargs.get('db_session', None)
         instance_model = db_session.query(InstanceModel).filter_by(id=instance_id).first()
         param_models = db_session.query(ParamModel).filter_by(instance_id=instance_id)
-        param_models_json = [x.value for x in param_models]
-        param_models_joined_json = ", ".join(param_models_json).replace("'", '"')
-        parameterized_json = '{' \
-                             f'  "class_path": "{instance_model.class_path}",' \
-                             f'  "params": [{param_models_joined_json}]' \
-                             '}'
-        new_instance = ParamSerializer.from_json(parameterized_json)
+
+        # Serialize data from param model
+        param_model_serialized_data = self.load_serialized_data_from_param_model(param_models)
+
+        # Getting param_object
+        param_object = self.get_param_object_from_instance(instance_model)
+
+        # Update param object with new data
+        new_instance = self.update_param_object(param_object, param_model_serialized_data)
 
         return new_instance
 
@@ -132,16 +143,16 @@ class SqlAlchemyAgent(AgentBase):
         instance_model = db_session.query(InstanceModel).get(instance_id)
         if instance_model is None:
             raise RuntimeError(f'Parameterized instance with id "{instance_id}" does not exist.')
-
-        serialized_param_dict = ParamSerializer.to_dict(instance)
-        instance_model.class_path = serialized_param_dict.get('class_path')
+        serialized_param = json.loads(JSONSerialization.serialize_parameters(instance))
+        serialized_param.pop('name')
 
         param_models_in_db = {
             x.id: json.loads(x.value)
             for x in db_session.query(ParamModel).filter_by(instance_id=instance_id)
         }
-        params_in_instance = {x['name']: x for x in serialized_param_dict.get('params', [])}
-
+        params_in_instance = {key: {'name': key, 'value': value,
+                                    'type': self.get_type_from_param_instance(instance, key)}
+                              for key, value in serialized_param.items()}
         pids = [x for x in param_models_in_db.keys()]
         for pid in pids:
             param = param_models_in_db[pid]
@@ -158,3 +169,72 @@ class SqlAlchemyAgent(AgentBase):
         db_session.commit()
 
         return instance_id
+
+    @staticmethod
+    def get_param_names(param_object):
+        """
+            return list of all the names in param
+        """
+        param_items = param_object.get_param_values()
+        param_names = list()
+        for item in param_items:
+            param_names.append(item[0])
+
+        return param_names
+
+    @staticmethod
+    def get_param_object_from_instance(instance_model):
+        # Getting param_object
+        try:
+            class_base_path, class_name = instance_model.class_path.rsplit('.', 1)
+            param_module = importlib.import_module(class_base_path)
+            parameterized_class = getattr(param_module, class_name)
+        except ImportError:
+            raise RuntimeError(f'Defined param class "class_path" was not importable.'
+                               f' Given path is "{instance_model.class_path}"')
+
+        param_object = parameterized_class()
+
+        return param_object
+
+    def update_param_object(self, param_object, serialized_data):
+        # Deserialize param data
+        param_model_deserialize = JSONSerialization. \
+            deserialize_parameters(pobj=param_object, serialization=json.dumps(serialized_data))
+
+        # Update param object using deserialized data.
+        param_names = self.get_param_names(param_object)
+        for key, value in param_model_deserialize.items():
+            if key in param_names:
+                setattr(param_object, key, value)
+            else:
+                continue
+
+        return param_object
+
+    @staticmethod
+    def load_serialized_data_from_param_model(param_models):
+        param_models_json = [x.value for x in param_models]
+        # Create serialized dictionary data in param serialized format to deserialize
+        param_model_serialized_data = dict()
+
+        for item in param_models_json:
+            item = json.loads(item)
+            param_model_serialized_data[item['name']] = item['value']
+
+        return param_model_serialized_data
+
+    @staticmethod
+    def get_type_from_param_instance(instance, key):
+        type_string = '.'.join([type(instance.param.__getitem__(key)).__module__,
+                                type(instance.param.__getitem__(key)).__name__]
+                               )
+        return type_string
+
+    @staticmethod
+    def get_class_path_from_param_instance(instance):
+        class_path = ".".join([
+            instance.__module__,
+            instance.__class__.__name__,
+        ])
+        return class_path
