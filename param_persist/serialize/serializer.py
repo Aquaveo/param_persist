@@ -9,7 +9,6 @@ import json
 from param_persist.serialize.handlers import deserialize_handlers
 
 
-
 class ParamSerializer(object):
     """
     A class used to serialize a param class.

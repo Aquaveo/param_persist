@@ -5,7 +5,6 @@ This file was created on August 06, 2020
 """
 import json
 import logging
-from unittest.mock import patch
 
 import param
 import pytest
