@@ -198,17 +198,24 @@ class SqlAlchemyAgent(AgentBase):
         return param_object
 
     def update_param_object(self, param_object, serialized_data):
+        # Update param object using deserialized data.
+        param_names = self.get_param_names(param_object)
+
+        # Remove extra args if needed.
+        keys_to_remove = list()
+        for key, value in serialized_data.items():
+            if key not in param_names:
+                keys_to_remove.append(key)
+
+        for key in keys_to_remove:
+            serialized_data.pop(key)
+
         # Deserialize param data
         param_model_deserialize = JSONSerialization. \
             deserialize_parameters(pobj=param_object, serialization=json.dumps(serialized_data))
 
-        # Update param object using deserialized data.
-        param_names = self.get_param_names(param_object)
         for key, value in param_model_deserialize.items():
-            if key in param_names:
-                setattr(param_object, key, value)
-            else:
-                continue
+            setattr(param_object, key, value)
 
         return param_object
 
