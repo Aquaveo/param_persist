@@ -61,6 +61,7 @@ jobs:
           pip install coverage pytest==5.4.1 pytest-cov
           pip install -e .
           pip install param -e .
+          python -m pip install git+https://github.com/holoviz/param.git
       - name: Run Tests on ${{ matrix.python-version }} on ${{ matrix.platform }}
         run: |
           pytest --cov ./param_persist --cov-report=term-missing --cache-clear
