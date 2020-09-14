@@ -25,7 +25,7 @@ with open(path.join(setup_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name=release_package,
-    version='0.0.8',
+    version='0.1.0',
     description='The param_persist provides functionality to persist param classes.',
     long_description=long_description,
     author='gagelarsen',
