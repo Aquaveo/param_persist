@@ -60,25 +60,11 @@ def test_save_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_sessio
         assert p.instance_id == instance_model_id
         param_dict = json.loads(p.value)
         assert getattr(parameterized_class, param_dict['name']) == param_dict['value']
-        # parameter_type = type(getattr(parameterized_class.param, param_dict['name']))
-        # base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
-        # assert base_type == param_dict['type']
+        parameter_type = type(getattr(parameterized_class.param, param_dict['name']))
+        base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
+        assert base_type == param_dict['type']
 
     assert param_model_count == 4
-
-#
-# def test_save_exception(sqlalchemy_engine):
-#     """
-#     Test the save function of the param persist sqlalchemy agent throwing an error.
-#     """
-#     agent = SqlAlchemyAgent(sqlalchemy_engine)
-#     with patch('param_persist.serialize.serializer.ParamSerializer.to_dict',
-#                side_effect=Exception('Mock Exception for Coverage: Raised when calling to_dict')):
-#         with pytest.raises(Exception) as excinfo:
-#             parameterized_class = AgentTestParam()
-#             agent.save(parameterized_class)
-#
-#     assert 'Mock Exception for Coverage: Raised when calling to_dict' in str(excinfo.value)
 
 
 def test_load_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_session_factory,
@@ -102,9 +88,9 @@ def test_load_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_sessio
         assert p.instance_id == instance_model.id
         param_dict = json.loads(p.value)
         assert getattr(parameterized_instance, param_dict['name']) == param_dict['value']
-        # parameter_type = type(getattr(parameterized_instance.param, param_dict['name']))
-        # base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
-        # assert base_type == param_dict['type']
+        parameter_type = type(getattr(parameterized_instance.param, param_dict['name']))
+        base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
+        assert base_type == param_dict['type']
 
 
 def test_load_param_missing_param_fields(sqlalchemy_engine, sqlalchemy_session_factory,
@@ -128,9 +114,9 @@ def test_load_param_missing_param_fields(sqlalchemy_engine, sqlalchemy_session_f
         assert p.instance_id == instance_model.id
         param_dict = json.loads(p.value)
         assert getattr(parameterized_instance, param_dict['name']) == param_dict['value']
-        # parameter_type = type(getattr(parameterized_instance.param, param_dict['name']))
-        # base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
-        # assert base_type == param_dict['type']
+        parameter_type = type(getattr(parameterized_instance.param, param_dict['name']))
+        base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
+        assert base_type == param_dict['type']
 
     assert parameterized_instance.integer_field == 1
     assert parameterized_instance.string_field == "My String"
@@ -150,7 +136,6 @@ def test_load_param_extra_param_fields(sqlalchemy_engine, sqlalchemy_session_fac
     param_models = [x for x in sqlalchemy_session.query(ParamModel).filter_by(instance_id=instance_model.id)]
     assert len(param_models) == 6
 
-    breakpoint()
     parameterized_instance = agent.load(instance_model.id)
 
     assert type(parameterized_instance) is AgentTestParam
@@ -163,9 +148,9 @@ def test_load_param_extra_param_fields(sqlalchemy_engine, sqlalchemy_session_fac
             assert param_dict['name'] in ['garbage_field_1', 'garbage_field_2']
             continue
         assert param_value == param_dict['value']
-        # parameter_type = type(getattr(parameterized_instance.param, param_dict['name']))
-        # base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
-        # assert base_type == param_dict['type']
+        parameter_type = type(getattr(parameterized_instance.param, param_dict['name']))
+        base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
+        assert base_type == param_dict['type']
 
 
 def test_load_param_with_invalid_class(sqlalchemy_engine, sqlalchemy_instance_invalid_class):
@@ -235,9 +220,9 @@ def test_update_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_sess
         assert p.instance_id == instance_model_id
         param_dict = json.loads(p.value)
         assert getattr(parameterized_class, param_dict['name']) == param_dict['value']
-        # parameter_type = type(getattr(parameterized_class.param, param_dict['name']))
-        # base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
-        # assert base_type == param_dict['type']
+        parameter_type = type(getattr(parameterized_class.param, param_dict['name']))
+        base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
+        assert base_type == param_dict['type']
 
     assert param_model_count == 4
 
@@ -283,8 +268,8 @@ def test_update_param_removing_attribute(sqlalchemy_engine, sqlalchemy_session_f
         assert p.instance_id == instance_model_id
         param_dict = json.loads(p.value)
         assert getattr(parameterized_class, param_dict['name']) == param_dict['value']
-        # parameter_type = type(getattr(parameterized_class.param, param_dict['name']))
-        # base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
-        # assert base_type == param_dict['type']
+        parameter_type = type(getattr(parameterized_class.param, param_dict['name']))
+        base_type = '.'.join([parameter_type.__module__, parameter_type.__name__])
+        assert base_type == param_dict['type']
 
     assert param_model_count == 3

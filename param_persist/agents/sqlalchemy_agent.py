@@ -73,11 +73,12 @@ class SqlAlchemyAgent(AgentBase):
         new_instance = InstanceModel(id=str(new_instance_uuid), class_path=class_path)
         db_session.add(new_instance)
 
-        param_models = [ParamModel(id=(str(uuid.uuid4())),
-                                   value=json.dumps({'name': key, 'value': value,
-                                                     'type': self.get_type_from_param_instance(instance, key)}),
-                                   instance_id=str(new_instance_uuid))
-                        for key, value in serialized_param.items()]
+        param_models = list()
+        for key, value in serialized_param.items():
+            param_models.append(ParamModel(id=(str(uuid.uuid4())),
+                                           value=json.dumps({'name': key, 'value': value,
+                                                             'type': self.get_type_from_param_instance(instance, key)}),
+                                           instance_id=str(new_instance_uuid)))
 
         for p in param_models:
             db_session.add(p)
@@ -147,13 +148,15 @@ class SqlAlchemyAgent(AgentBase):
         serialized_param = json.loads(JSONSerialization.serialize_parameters(instance))
         serialized_param.pop('name')
 
-        param_models_in_db = {
-            x.id: json.loads(x.value)
-            for x in db_session.query(ParamModel).filter_by(instance_id=instance_id)
-        }
-        params_in_instance = {key: {'name': key, 'value': value,
-                                    'type': self.get_type_from_param_instance(instance, key)}
-                              for key, value in serialized_param.items()}
+        param_models_in_db = dict()
+        for x in db_session.query(ParamModel).filter_by(instance_id=instance_id):
+            param_models_in_db[x.id] = json.loads(x.value)
+
+        params_in_instance = dict()
+        for key, value in serialized_param.items():
+            params_in_instance[key] = {'name': key, 'value': value,
+                                       'type': self.get_type_from_param_instance(instance, key)}
+
         pids = [x for x in param_models_in_db.keys()]
         for pid in pids:
             param = param_models_in_db[pid]
