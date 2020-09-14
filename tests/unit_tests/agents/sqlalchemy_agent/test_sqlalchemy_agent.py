@@ -5,7 +5,6 @@ This file was created on August 06, 2020
 """
 import json
 import logging
-from unittest.mock import patch
 
 import param
 import pytest
@@ -66,20 +65,6 @@ def test_save_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_sessio
         assert base_type == param_dict['type']
 
     assert param_model_count == 4
-
-
-def test_save_exception(sqlalchemy_engine):
-    """
-    Test the save function of the param persist sqlalchemy agent throwing an error.
-    """
-    agent = SqlAlchemyAgent(sqlalchemy_engine)
-    with patch('param_persist.serialize.serializer.ParamSerializer.to_dict',
-               side_effect=Exception('Mock Exception for Coverage: Raised when calling to_dict')):
-        with pytest.raises(Exception) as excinfo:
-            parameterized_class = AgentTestParam()
-            agent.save(parameterized_class)
-
-    assert 'Mock Exception for Coverage: Raised when calling to_dict' in str(excinfo.value)
 
 
 def test_load_param_using_sqlalchemy_engine(sqlalchemy_engine, sqlalchemy_session_factory,
@@ -147,13 +132,13 @@ def test_load_param_extra_param_fields(sqlalchemy_engine, sqlalchemy_session_fac
     sqlalchemy_session = sqlalchemy_session_factory()
     instance_model = sqlalchemy_session.query(InstanceModel).filter_by(id=sqlalchemy_instance_model_extra.id).first()
     assert instance_model.id == sqlalchemy_instance_model_extra.id
+
     param_models = [x for x in sqlalchemy_session.query(ParamModel).filter_by(instance_id=instance_model.id)]
     assert len(param_models) == 6
 
     parameterized_instance = agent.load(instance_model.id)
 
     assert type(parameterized_instance) is AgentTestParam
-
     assert len(param_models) == 6
     for p in param_models:
         assert p.instance_id == instance_model.id
