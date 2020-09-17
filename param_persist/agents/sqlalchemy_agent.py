@@ -179,7 +179,7 @@ class SqlAlchemyAgent(AgentBase):
         """
         Return list of all the names in param.
         """
-        param_items = param_object.get_param_values()
+        param_items = param_object.param.get_param_values()
         param_names = list()
         for item in param_items:
             param_names.append(item[0])
