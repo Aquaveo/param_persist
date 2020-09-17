@@ -56,6 +56,7 @@ class AgentBase(ABC):
     def get_serialized_param(self, instance):
         """
         Get the serialized parameter data.
+
         Args:
             instance: The instance to serialize
 
